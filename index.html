@@ -45,10 +45,27 @@
     padding: 20px;
     margin-bottom: 16px;
   }
+  .card-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+  }
   .card-label {
     font-size: 11px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.8px; color: var(--text-dim); margin-bottom: 14px;
+    letter-spacing: 0.8px; color: var(--text-dim);
   }
+  .info-btn {
+    width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--text-dim);
+    background: transparent; color: var(--text-dim); font-size: 12px; font-weight: 700;
+    font-family: var(--font); cursor: pointer; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; transition: all 0.15s; line-height: 1;
+  }
+  .info-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .info-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .info-panel {
+    display: none; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 7px; padding: 12px 14px; margin-bottom: 14px;
+    font-size: 13px; color: var(--text-dim); line-height: 1.6;
+  }
+  .info-panel.visible { display: block; }
   .input-row { display: flex; gap: 12px; margin-bottom: 14px; }
   .input-group { flex: 1; display: flex; flex-direction: column; gap: 5px; }
   .input-group label { font-size: 12px; font-weight: 500; color: var(--text-dim); }
@@ -189,7 +206,11 @@
   </header>
 
   <div class="card">
-    <div class="card-label">Critical Difference (Thornton &amp; Raffin, 1978)</div>
+    <div class="card-header">
+      <div class="card-label">Critical Difference (Thornton &amp; Raffin, 1978)</div>
+      <button class="info-btn" data-info="info-cd" aria-label="Info">i</button>
+    </div>
+    <div class="info-panel" id="info-cd">Use this to compare two word recognition scores (e.g., right ear vs. left ear, or tracking changes over time) and determine whether the difference is statistically meaningful or just normal test-retest variability.</div>
     <div class="input-row">
       <div class="input-group">
         <label>Score 1</label>
@@ -244,7 +265,11 @@
   </div>
 
   <div class="card">
-    <div class="card-label">PB-Max Check (Dubno et al., 1995)</div>
+    <div class="card-header">
+      <div class="card-label">PB-Max Check (Dubno et al., 1995)</div>
+      <button class="info-btn" data-info="info-dubno" aria-label="Info">i</button>
+    </div>
+    <div class="info-panel" id="info-dubno">Use this to check whether a patient's word recognition score is disproportionately low given their degree of hearing loss. If the score falls below the expected minimum for their PTA, it suggests the poor speech understanding can't be explained by the audiogram alone.</div>
     <div class="input-row">
       <div class="input-group">
         <label>Word recognition score</label>
@@ -275,7 +300,11 @@
   </div>
 
   <div class="card">
-    <div class="card-label">Presentation Level (2 kHz SL Method)</div>
+    <div class="card-header">
+      <div class="card-label">Presentation Level (2 kHz SL Method)</div>
+      <button class="info-btn" data-info="info-pl" aria-label="Info">i</button>
+    </div>
+    <div class="info-panel" id="info-pl">Use this to calculate the appropriate presentation level for word recognition testing based on the 2 kHz threshold. This method helps ensure you're testing at a level that gives the patient their best performance opportunity without over-presenting. </div>
     <div class="input-row" style="margin-bottom:0">
       <div class="input-group">
         <label>2000 Hz threshold</label>
@@ -312,15 +341,24 @@
 </div>
 
 <script>
-// ===== PUBLISHED TABLE: Thornton & Raffin (1978) =====
-// Lower half (0-50%) extracted from multiple clinical trials documents
-// (NCT04120116, NCT05086276, NCT03616223) which reproduce the original table.
-// Upper half (52-100%) derived by symmetry: for score S, mirror = 100-S;
-// if S has range [L,U], then (100-S) has range [100-U, 100-L].
-// Verified against published data points:
-//   44% on 50 words → 26-62% (Hornsby & Mueller, AudiologyOnline 2013)
-//   80% on 50 words → 64-92% (Mueller & Hornsby, AudiologyOnline 2020; Thibodeau UT Dallas)
+// ===== INFO BUTTON TOGGLE =====
+document.querySelectorAll('.info-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const panelId = btn.dataset.info;
+    const panel = document.getElementById(panelId);
+    const isVisible = panel.classList.contains('visible');
+    // Close all panels first
+    document.querySelectorAll('.info-panel').forEach(p => p.classList.remove('visible'));
+    document.querySelectorAll('.info-btn').forEach(b => b.classList.remove('active'));
+    // Toggle this one
+    if (!isVisible) {
+      panel.classList.add('visible');
+      btn.classList.add('active');
+    }
+  });
+});
 
+// ===== PUBLISHED TABLE: Thornton & Raffin (1978) =====
 const TR_TABLE_50 = {
   0:[0,4],    2:[0,10],   4:[0,14],   6:[2,18],   8:[2,22],
   10:[2,24],  12:[4,26],  14:[4,30],  16:[6,32],  18:[6,34],
@@ -328,7 +366,6 @@ const TR_TABLE_50 = {
   30:[14,48], 32:[16,50], 34:[18,52], 36:[20,54], 38:[22,56],
   40:[22,58], 42:[24,60], 44:[26,62], 46:[28,64], 48:[30,66],
   50:[32,68],
-  // Symmetric upper half
   52:[34,70], 54:[36,72], 56:[38,74], 58:[40,76], 60:[42,78],
   62:[44,78], 64:[46,80], 66:[48,82], 68:[50,84], 70:[52,86],
   72:[54,86], 74:[56,88], 76:[58,90], 78:[60,92], 80:[64,92],
@@ -340,7 +377,6 @@ const TR_TABLE_25 = {
   0:[0,8],    4:[0,20],   8:[0,28],   12:[4,32],  16:[4,40],
   20:[4,44],  24:[8,48],  28:[8,52],  32:[12,56], 36:[16,60],
   40:[16,64], 44:[20,68], 48:[24,72],
-  // Symmetric upper half
   52:[28,76], 56:[32,80], 60:[36,84], 64:[40,84],
   68:[44,88], 72:[48,92], 76:[52,92], 80:[56,96],
   84:[60,96], 88:[68,96], 92:[72,100], 96:[80,100], 100:[92,100]
@@ -353,7 +389,6 @@ function lookupTR(score, n) {
   const clamped = Math.max(0, Math.min(100, snapped));
   const range = table[clamped];
   if (range) return { lower: range[0], upper: range[1], snapped: clamped };
-  // Fallback: nearest key
   const keys = Object.keys(table).map(Number).sort((a,b) => a-b);
   let best = keys[0];
   for (const k of keys) { if (Math.abs(k - clamped) < Math.abs(best - clamped)) best = k; }
@@ -361,7 +396,7 @@ function lookupTR(score, n) {
   return { lower: r[0], upper: r[1], snapped: best };
 }
 
-// ===== BINOMIAL MODEL (computed) =====
+// ===== BINOMIAL MODEL =====
 function binomialRange(n, scorePercent) {
   const step = 100 / n;
   const snapped = Math.round(scorePercent / step) * step;
@@ -400,12 +435,7 @@ function binomialRange(n, scorePercent) {
   };
 }
 
-// ===== Dubno et al. (1995) — EXACT published 95% CL for PBmax =====
-// Table 5: Discrete 95% CL for 25-item NU-6 word lists
-// Table 6: Discrete 95% CL for 50-item NU-6 word lists
-// PTA = average of 0.5, 1.0, 2.0 kHz thresholds
-// "Discrete" column values = scores at which the CL applies given list step size
-// A score BELOW this value is considered disproportionately low.
+// ===== Dubno et al. (1995) =====
 const DUBNO_25 = [
   [-3.3,100],[0.0,100],[1.7,100],[3.3,96],[5.0,96],[6.7,96],[8.3,96],
   [10.0,96],[11.7,92],[13.3,92],[15.0,92],[16.7,88],[18.3,88],[20.0,88],
@@ -430,7 +460,6 @@ function dubnoMinWRS(pta, n) {
   if (pta >= table[table.length-1][0]) return table[table.length-1][1];
   for (let i = 0; i < table.length - 1; i++) {
     if (pta >= table[i][0] && pta <= table[i+1][0]) {
-      // Return the lower (more conservative) of the two bracketing values
       return Math.min(table[i][1], table[i+1][1]);
     }
   }
@@ -561,7 +590,7 @@ compareBtn.addEventListener('click', () => {
   resultCard.classList.add('visible');
 });
 
-// Dubno check (independent)
+// Dubno check
 document.getElementById('dubnoBtn').addEventListener('click', () => {
   const score = parseFloat(document.getElementById('dubnoScore').value);
   const n = parseInt(document.getElementById('dubnoListSize').value);
