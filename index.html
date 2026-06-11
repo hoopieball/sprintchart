@@ -74,7 +74,7 @@
   .btn {
     width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none;
     border-radius: 7px; font-family: var(--font); font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: opacity 0.15s; margin-bottom: 16px;
+    cursor: pointer; transition: opacity 0.15s;
   }
   .btn:hover { opacity: 0.88; }
   .btn:active { opacity: 0.75; }
@@ -82,7 +82,7 @@
   /* Tabs */
   .tabs {
     display: flex; gap: 2px; background: var(--surface2); border-radius: 8px;
-    padding: 3px; margin-bottom: 16px;
+    padding: 3px;
   }
   .tab {
     flex: 1; padding: 8px 12px; border: none; background: transparent;
@@ -91,16 +91,14 @@
   }
   .tab.active { background: var(--surface); color: var(--text); }
   .tab-hint {
-    font-size: 11px; color: var(--text-dim); margin-bottom: 14px; line-height: 1.5;
-    padding: 8px 10px; background: var(--surface2); border-radius: 6px;
+    font-size: 11px; color: var(--text-dim); margin-top: 10px; line-height: 1.5;
   }
 
   /* Results */
-  .result-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 20px; margin-bottom: 16px; display: none;
+  .result-inner {
+    margin-top: 14px; display: none;
   }
-  .result-card.visible { display: block; }
+  .result-inner.visible { display: block; }
   .verdict {
     font-size: 17px; font-weight: 700; margin-bottom: 6px;
     display: flex; align-items: center; gap: 8px;
@@ -147,33 +145,9 @@
   .dot.s2 { background: var(--amber); }
   .dot.ci { background: var(--green); opacity: 0.5; }
 
-  /* Toggle / Dubno */
-  .toggle-row {
-    display: flex; align-items: center; gap: 10px;
-    cursor: pointer; user-select: none; padding: 4px 0;
-  }
-  .toggle-row input[type="checkbox"] { display: none; }
-  .toggle-switch {
-    width: 36px; height: 20px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 10px;
-    position: relative; transition: background 0.2s; flex-shrink: 0;
-  }
-  .toggle-switch::after {
-    content: ''; position: absolute; width: 14px; height: 14px;
-    background: var(--text-dim); border-radius: 50%; top: 2px; left: 2px;
-    transition: transform 0.2s, background 0.2s;
-  }
-  .toggle-row input:checked + .toggle-switch {
-    background: var(--accent-dim); border-color: var(--accent);
-  }
-  .toggle-row input:checked + .toggle-switch::after {
-    transform: translateX(16px); background: var(--accent);
-  }
-  .toggle-label { font-size: 13px; color: var(--text-dim); }
-  .dubno-inputs { margin-top: 14px; display: none; }
-  .dubno-inputs.visible { display: block; }
+  /* Dubno */
   .dubno-result {
-    margin-top: 12px; padding: 12px 14px; border-radius: 7px;
+    margin-top: 14px; padding: 12px 14px; border-radius: 7px;
     font-size: 13px; line-height: 1.5; display: none;
   }
   .dubno-result.visible { display: block; }
@@ -214,14 +188,8 @@
     <p>SPeech Recognition INTerpretation — compare two word recognition scores to determine if the difference is statistically significant.</p>
   </header>
 
-  <div class="tabs">
-    <button class="tab active" data-tab="table">Published Table (T&amp;R 1978)</button>
-    <button class="tab" data-tab="binomial">Binomial Model</button>
-  </div>
-  <div class="tab-hint" id="tabHint">Using the published Thornton &amp; Raffin (1978) critical difference table values. Scores snap to valid increments for the selected list size.</div>
-
   <div class="card">
-    <div class="card-label">Scores</div>
+    <div class="card-label">Critical Difference (Thornton &amp; Raffin, 1978)</div>
     <div class="input-row">
       <div class="input-group">
         <label>Score 1</label>
@@ -238,7 +206,7 @@
         </div>
       </div>
     </div>
-    <div class="input-row" style="margin-bottom:0">
+    <div class="input-row">
       <div class="input-group">
         <label>Words per list</label>
         <select id="listSize">
@@ -247,57 +215,63 @@
         </select>
       </div>
     </div>
+    <div class="tabs">
+      <button class="tab active" data-tab="table">Published Table</button>
+      <button class="tab" data-tab="binomial">Binomial Model</button>
+    </div>
+    <div class="tab-hint" id="tabHint">Using the published Thornton &amp; Raffin (1978) critical difference table values.</div>
+    <button class="btn" id="compareBtn" style="margin-top:14px">Compare Scores</button>
+    <div class="result-inner" id="resultCard">
+      <div class="verdict" id="verdict"></div>
+      <div class="result-detail" id="resultDetail"></div>
+      <div class="range-viz">
+        <div class="range-bar">
+          <div class="range-fill" id="rangeFill"></div>
+          <div class="range-marker score1" id="marker1"></div>
+          <div class="range-marker score2" id="marker2"></div>
+        </div>
+        <div class="range-labels">
+          <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+        </div>
+        <div class="range-legend">
+          <span><span class="dot s1"></span>Score 1</span>
+          <span><span class="dot s2"></span>Score 2</span>
+          <span><span class="dot ci" id="ciDot"></span>95% critical range</span>
+        </div>
+      </div>
+      <div class="info-text" id="infoText"></div>
+    </div>
   </div>
 
   <div class="card">
-    <label class="toggle-row">
-      <input type="checkbox" id="dubnoToggle">
-      <span class="toggle-switch"></span>
-      <span class="toggle-label">Check if score is disproportionately low for PTA (Dubno et al., 1995)</span>
-    </label>
-    <div class="dubno-inputs" id="dubnoInputs">
-      <div class="input-row" style="margin-bottom:0">
-        <div class="input-group">
-          <label>PTA (500, 1000, 2000 Hz)</label>
-          <div class="input-wrap">
-            <input type="number" id="ptaInput" min="0" max="90" step="1" placeholder="e.g. 40">
-            <span class="suffix">dB</span>
-          </div>
+    <div class="card-label">PB-Max Check (Dubno et al., 1995)</div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Word recognition score</label>
+        <div class="input-wrap">
+          <input type="number" id="dubnoScore" min="0" max="100" step="1" placeholder="e.g. 72">
+          <span class="suffix">%</span>
         </div>
-        <div class="input-group">
-          <label>Check which score?</label>
-          <select id="dubnoWhich">
-            <option value="1">Score 1</option>
-            <option value="2">Score 2</option>
-            <option value="both">Both</option>
-          </select>
+      </div>
+      <div class="input-group">
+        <label>PTA (500, 1000, 2000 Hz)</label>
+        <div class="input-wrap">
+          <input type="number" id="ptaInput" min="0" max="90" step="1" placeholder="e.g. 40">
+          <span class="suffix">dB</span>
         </div>
       </div>
     </div>
-  </div>
-
-  <button class="btn" id="compareBtn">Compare Scores</button>
-
-  <div class="result-card" id="resultCard">
-    <div class="verdict" id="verdict"></div>
-    <div class="result-detail" id="resultDetail"></div>
-    <div class="range-viz">
-      <div class="range-bar">
-        <div class="range-fill" id="rangeFill"></div>
-        <div class="range-marker score1" id="marker1"></div>
-        <div class="range-marker score2" id="marker2"></div>
-      </div>
-      <div class="range-labels">
-        <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
-      </div>
-      <div class="range-legend">
-        <span><span class="dot s1"></span>Score 1</span>
-        <span><span class="dot s2"></span>Score 2</span>
-        <span><span class="dot ci"></span>95% critical range</span>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Words per list</label>
+        <select id="dubnoListSize">
+          <option value="50" selected>50 words</option>
+          <option value="25">25 words</option>
+        </select>
       </div>
     </div>
+    <button class="btn" id="dubnoBtn">Check</button>
     <div class="dubno-result" id="dubnoResult"></div>
-    <div class="info-text" id="infoText"></div>
   </div>
 
   <div class="card">
@@ -333,7 +307,7 @@
   </div>
 
   <div style="text-align:center; padding:20px 0 10px; font-size:11px; color:#8b90a0;">
-    Built by Margaret Ball
+    Built by Margaret Ball · <a href="mailto:hoopieprojectdatabase@gmail.com" style="color:#6c9bff; text-decoration:none;">Contact Me</a>
   </div>
 </div>
 
@@ -474,8 +448,8 @@ document.querySelectorAll('.tab').forEach(tab => {
     tab.classList.add('active');
     activeTab = tab.dataset.tab;
     tabHint.textContent = activeTab === 'table'
-      ? 'Using the published Thornton & Raffin (1978) critical difference table values. Scores snap to valid increments for the selected list size.'
-      : 'Computing critical ranges from the binomial distribution using the normal approximation to the binomial variance — the same model underlying T&R, but calculated rather than table-looked-up.';
+      ? 'Using the published Thornton & Raffin (1978) critical difference table values.'
+      : 'Computing critical ranges from the binomial model (normal approximation).';
     document.getElementById('resultCard').classList.remove('visible');
   });
 });
@@ -490,14 +464,7 @@ const detailEl = document.getElementById('resultDetail');
 const rangeFill = document.getElementById('rangeFill');
 const marker1 = document.getElementById('marker1');
 const marker2 = document.getElementById('marker2');
-const dubnoToggle = document.getElementById('dubnoToggle');
-const dubnoInputs = document.getElementById('dubnoInputs');
 const dubnoResultEl = document.getElementById('dubnoResult');
-
-dubnoToggle.addEventListener('change', () => {
-  dubnoInputs.classList.toggle('visible', dubnoToggle.checked);
-  if (!dubnoToggle.checked) dubnoResultEl.classList.remove('visible');
-});
 
 // Presentation level
 const thresh2kInput = document.getElementById('thresh2k');
@@ -583,34 +550,33 @@ compareBtn.addEventListener('click', () => {
   rangeFill.style.left = range.lower + '%';
   rangeFill.style.width = (range.upper - range.lower) + '%';
   rangeFill.className = 'range-fill' + (isSignificant ? ' outside' : '');
+  document.getElementById('ciDot').style.background = isSignificant ? 'var(--red)' : 'var(--green)';
   marker1.style.left = s1Snap + '%';
   marker2.style.left = s2Snap + '%';
 
-  // Dubno
-  if (dubnoToggle.checked) {
-    const pta = parseFloat(document.getElementById('ptaInput').value);
-    const which = document.getElementById('dubnoWhich').value;
-    if (!isNaN(pta) && pta >= 0) {
-      const minExp = dubnoMinWRS(pta, n);
-      let html = '', anyLow = false;
-      const check = (label, score) => {
-        const low = score < minExp;
-        if (low) anyLow = true;
-        return `<strong>${label} (${score}%)</strong> is ${low ? 'below' : 'at or above'} the minimum expected score of <strong>${minExp}%</strong> for a PTA of ${pta} dB HL.${low ? ' This is disproportionately low.' : ''}`;
-      };
-      if (which === '1' || which === 'both') html += check('Score 1', s1Snap);
-      if (which === 'both') html += '<br><br>';
-      if (which === '2' || which === 'both') html += check('Score 2', s2Snap);
-      dubnoResultEl.innerHTML = html;
-      dubnoResultEl.className = 'dubno-result visible ' + (anyLow ? 'low' : 'normal');
-    } else { dubnoResultEl.classList.remove('visible'); }
-  } else { dubnoResultEl.classList.remove('visible'); }
-
   infoText.innerHTML = activeTab === 'table'
-    ? 'Critical difference values from the published Thornton &amp; Raffin (1978) table. PB-Max 95% confidence limits from Dubno et al. (1995) Table 5 (25-word) and Table 6 (50-word), using Auditec NU-6 lists. Chart concept by Linda Thibodeau (2007).'
-    : 'Critical ranges computed using the normal approximation to the binomial variance — the underlying model used by Thornton &amp; Raffin (1978). Values may differ from the published table by ±1 word at some scores. See Carney &amp; Schlauch (2007) for details. PB-Max limits from Dubno et al. (1995).';
+    ? 'Values from the published Thornton &amp; Raffin (1978) table. Chart concept by Linda Thibodeau (2007).'
+    : 'Computed using the normal approximation to the binomial variance. Values may differ from the published table by ±1 word. See Carney &amp; Schlauch (2007).';
 
   resultCard.classList.add('visible');
+});
+
+// Dubno check (independent)
+document.getElementById('dubnoBtn').addEventListener('click', () => {
+  const score = parseFloat(document.getElementById('dubnoScore').value);
+  const n = parseInt(document.getElementById('dubnoListSize').value);
+  const pta = parseFloat(document.getElementById('ptaInput').value);
+
+  if (isNaN(score) || isNaN(pta) || score < 0 || score > 100 || pta < 0) return;
+
+  const step = 100 / n;
+  const snapped = Math.max(0, Math.min(100, Math.round(score / step) * step));
+  const minExp = dubnoMinWRS(pta, n);
+  const low = snapped < minExp;
+
+  let html = `<strong>${snapped}%</strong> is ${low ? 'below' : 'at or above'} the minimum expected PB-Max of <strong>${minExp}%</strong> for a PTA of ${pta} dB HL on a ${n}-word list.${low ? ' This is disproportionately low.' : ''}`;
+  dubnoResultEl.innerHTML = html;
+  dubnoResultEl.className = 'dubno-result visible ' + (low ? 'low' : 'normal');
 });
 </script>
 <!-- Google tag (gtag.js) -->
