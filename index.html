@@ -304,7 +304,7 @@
       <div class="card-label">Presentation Level (2 kHz SL Method)</div>
       <button class="info-btn" data-info="info-pl" aria-label="Info">i</button>
     </div>
-    <div class="info-panel" id="info-pl">Use this to calculate the appropriate presentation level for word recognition testing based on the 2 kHz threshold. This method helps ensure you're testing at a level that gives the patient their best performance opportunity without over-presenting. </div>
+    <div class="info-panel" id="info-pl">Use this to calculate the appropriate presentation level for word recognition testing based on the 2 kHz threshold. This method helps ensure you're testing at a level that gives the patient their best performance opportunity without over-presenting, especially important for sloping losses where PTA alone can underestimate high-frequency hearing loss.</div>
     <div class="input-row" style="margin-bottom:0">
       <div class="input-group">
         <label>2000 Hz threshold</label>
@@ -336,7 +336,7 @@
   </div>
 
   <div style="text-align:center; padding:20px 0 10px; font-size:11px; color:#8b90a0;">
-    Built by Margaret Ball · <a href="mailto:hoopieprojectdatabase@gmail.com" style="color:#6c9bff; text-decoration:none;">Contact Me</a>
+    Built by Margaret Ball AuD · <a href="mailto:hoopieprojectdatabase@gmail.com" style="color:#6c9bff; text-decoration:none;">Contact Me</a>
   </div>
 </div>
 
@@ -527,9 +527,14 @@ function updatePL() {
 }
 thresh2kInput.addEventListener('input', updatePL);
 
-// Enter key
+// Enter key — route to the correct button per card
 document.querySelectorAll('input, select').forEach(el => {
-  el.addEventListener('keydown', e => { if (e.key === 'Enter') compareBtn.click(); });
+  el.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const card = el.closest('.card');
+    const btn = card ? card.querySelector('.btn') : null;
+    if (btn) btn.click();
+  });
 });
 
 // Compare
